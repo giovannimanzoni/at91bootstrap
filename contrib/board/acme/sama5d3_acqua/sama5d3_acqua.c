@@ -47,7 +47,6 @@
 #include "sama5d3_acqua.h"
 #include "macb.h"
 #include "twi.h"
-#include "act8865.h"
 
 static void at91_dbgu_hw_init(void)
 {
@@ -201,8 +200,6 @@ static void ddramc_init(void)
  * to Pullup and Pulldown disabled, and output low.
  */
 
-#define GMAC_PINS	((0x01 << 8) | (0x01 << 11) \
-				| (0x01 << 16) | (0x01 << 18))
 
 #define EMAC_PINS	((0x01 << 7) | (0x01 << 8))
 
@@ -210,17 +207,6 @@ static void at91_special_pio_output_low(void)
 {
 	unsigned int base;
 	unsigned int value;
-
-	base = AT91C_BASE_PIOB;
-	value = GMAC_PINS;
-
-	writel((1 << AT91C_ID_PIOB), (PMC_PCER + AT91C_BASE_PMC));
-
-	writel(value, base + PIO_REG_PPUDR);	/* PIO_PPUDR */
-	writel(value, base + PIO_REG_PPDDR);	/* PIO_PPDDR */
-	writel(value, base + PIO_REG_PER);	/* PIO_PER */
-	writel(value, base + PIO_REG_OER);	/* PIO_OER */
-	writel(value, base + PIO_REG_CODR);	/* PIO_CODR */
 
 	base = AT91C_BASE_PIOC;
 	value = EMAC_PINS;
@@ -235,54 +221,32 @@ static void at91_special_pio_output_low(void)
 }
 #endif
 
-#if defined(CONFIG_MAC0_PHY)
-unsigned int at91_eth0_hw_init(void)
-{
-	unsigned int base_addr = AT91C_BASE_GMAC;
-
-	const struct pio_desc macb_pins[] = {
-		{"GMDC",	AT91C_PIN_PB(16), 0, PIO_DEFAULT, PIO_PERIPH_A},
-		{"GMDIO",	AT91C_PIN_PB(17), 0, PIO_DEFAULT, PIO_PERIPH_A},
-		{(char *)0, 0, 0, PIO_DEFAULT, PIO_PERIPH_A},
-	};
-
-	pio_configure(macb_pins);
-	pmc_enable_periph_clock(AT91C_ID_PIOB);
-
-	pmc_enable_periph_clock(AT91C_ID_GMAC);
-
-	return base_addr;
-}
-#endif
-
 #if defined(CONFIG_MAC1_PHY)
 unsigned int at91_eth1_hw_init(void)
 {
-	unsigned int base_addr = AT91C_BASE_EMAC;
+       unsigned int base_addr = AT91C_BASE_EMAC;
 
-	const struct pio_desc macb_pins[] = {
-		{"EMDC",	AT91C_PIN_PC(8), 0, PIO_DEFAULT, PIO_PERIPH_A},
-		{"EMDIO",	AT91C_PIN_PC(9), 0, PIO_DEFAULT, PIO_PERIPH_A},
-		{(char *)0, 0, 0, PIO_DEFAULT, PIO_PERIPH_A},
-	};
+       const struct pio_desc macb_pins[] = {
+               {"EMDC",        AT91C_PIN_PC(8), 0, PIO_DEFAULT, PIO_PERIPH_A},
+               {"EMDIO",       AT91C_PIN_PC(9), 0, PIO_DEFAULT, PIO_PERIPH_A},
+               {(char *)0, 0, 0, PIO_DEFAULT, PIO_PERIPH_A},
+       };
+ 
+       pio_configure(macb_pins);
+       pmc_enable_periph_clock(AT91C_ID_PIOC);
 
-	pio_configure(macb_pins);
-	pmc_enable_periph_clock(AT91C_ID_PIOC);
-
-	pmc_enable_periph_clock(AT91C_ID_EMAC);
-
-	return base_addr;
+       pmc_enable_periph_clock(AT91C_ID_EMAC);
+ 
+       return base_addr;
 }
 #endif
+
 
 #if defined(CONFIG_MACB)
 void at91_disable_mac_clock(void)
 {
-#if defined(CONFIG_MAC0_PHY)
-	pmc_disable_periph_clock(AT91C_ID_GMAC);
-#endif
 #if defined(CONFIG_MAC1_PHY)
-	pmc_disable_periph_clock(AT91C_ID_EMAC);
+        pmc_disable_periph_clock(AT91C_ID_EMAC);
 #endif
 }
 #endif  /* #if defined(CONFIG_MACB) */
@@ -321,48 +285,7 @@ unsigned int at91_twi2_hw_init(void)
 }
 #endif
 
-#if defined(CONFIG_AUTOCONFIG_TWI_BUS)
-void at91_board_config_twi_bus(void)
-{
-	act8865_twi_bus	= 1;
-}
-#endif
 
-#if defined(CONFIG_DISABLE_ACT8865_I2C)
-int at91_board_act8865_set_reg_voltage(void)
-{
-	unsigned char reg, value;
-	int ret;
-
-	/* Check ACT8865 I2C interface */
-	if (act8865_check_i2c_disabled())
-		return 0;
-
-	/* Enable REG2 output 1.25V */
-	reg = REG2_0;
-	value = ACT8865_1V25;
-	ret = act8865_set_reg_voltage(reg, value);
-	if (ret) {
-		dbg_info("ACT8865: Failed to make REG2 output 1250mV\n");
-		return -1;
-	}
-
-	dbg_info("ACT8865: The REG2 output 1250mV\n");
-
-	/* Enable REG5 output 3.3V */
-	reg = REG5_0;
-	value = ACT8865_3V3;
-	ret = act8865_set_reg_voltage(reg, value);
-	if (ret) {
-		dbg_info("ACT8865: Failed to make REG5 output 3300mV\n");
-		return -1;
-	}
-
-	dbg_info("ACT8865: The REG5 output 3300mV\n");
-
-	return 0;
-}
-#endif
 
 #if defined(CONFIG_PM)
 void at91_disable_smd_clock(void)
