@@ -7,8 +7,10 @@ main application from specified boot media: NAND FLASH, serial FLASH (both
 AT25-compatible of DataFlash), serial EEPROM, SD Card, etc. to main memory and
 to start it.
 
-1 GNU ARM Toolchain
+1 ARM Toolchain
 ================================================================================
+
+1.1 GNU ARM Toolchain
 
 AT91Bootstrap has been compiled and tested under Linux using the following GNU
 ARM Toolchain:
@@ -19,14 +21,24 @@ ARM Toolchain:
 - gcc version 4.9.3 (Linaro GCC 2014.11)
 - gcc version 5.1.1 (Linaro GCC 5.1-2015.08)
 
+1.2 FreeBSD Toolchain
+
+AT91Bootstrap has been compiled and tested under FreeBSD using the following
+ARM Toolchain:
+- gcc version 4.9.2 (TrueOS/arm-none-eabi-gcc492)
+
 2 Compile AT91Bootstrap
 ================================================================================
 
-2.1 Compile DataFlashBoot
+2.1 Compile on Linux
+
+The Linux way
+
+2.1.1 Compile DataFlashBoot
 
 Let's use at91sam9x5ek as an example,
 
-2.1.1 Compile booting u-boot image from DataFlash
+2.1.1.1 Compile booting u-boot image from DataFlash
 
 $ cd <project directory>
 $ make mrproper
@@ -46,7 +58,7 @@ $ make
 If the building process is successful, the final .bin image can be found under
 binaries/
 
-2.1.3 Compile booting kernel & dt image from DataFlash
+2.1.1.3 Compile booting kernel & dt image from DataFlash
 
 $ cd <project directory>
 $ make mrproper
@@ -56,11 +68,11 @@ $ make
 If the building process is successful, the final .bin image can be found under
 binaries/
 
-2.2 Compile NandFlashBoot
+2.1.2 Compile NandFlashBoot
 
 Let's use at91sam9m10g45ek as an example,
 
-2.2.1 Compile booting u-boot image from NandFlash
+2.1.2.1 Compile booting u-boot image from NandFlash
 
 $ cd <project directory>
 $ make mrproper
@@ -70,7 +82,7 @@ $ make
 If the building process is successful, the final .bin image can be found under
 binaries/
 
-2.2.2 Compile booting kernel image from NandFlash
+2.1.2.2 Compile booting kernel image from NandFlash
 
 $ cd <project directory>
 $ make mrproper
@@ -80,7 +92,7 @@ $ make
 If the building process is successful, the final .bin image can be found under
 binaries/
 
-2.2.3 Compile booting kernel & dt image from NandFlash
+2.1.2.3 Compile booting kernel & dt image from NandFlash
 
 $ cd <project directory>
 $ make mrproper
@@ -90,11 +102,11 @@ $ make
 If the building process is successful, the final .bin image can be found under
 binaries/
 
-2.3 Compile SDCardBoot
+2.1.3 Compile SDCardBoot
 
 Let's use at91sam9m10g45ek as an example,
 
-2.3.1 Compile booting u-boot image from SDCard
+2.1.3.1 Compile booting u-boot image from SDCard
 
 $ cd <project directory>
 $ make mrproper
@@ -104,7 +116,7 @@ $ make
 If the building process is successful, the final .bin image can be found under
 binaries/
 
-2.3.2 Compile booting linux image from SDCard
+2.1.3.2 Compile booting linux image from SDCard
 
 $ cd <project directory>
 $ make mrproper
@@ -114,7 +126,7 @@ $ make
 If the building process is successful, the final .bin image can be found under
 binaries/
 
-2.3.3 Compile booting linux & dt image from SDCard
+2.1.3.3 Compile booting linux & dt image from SDCard
 
 $ cd <project directory>
 $ make mrproper
@@ -123,6 +135,27 @@ $ make
 
 If the building process is successful, the final .bin image can be found under
 binaries/
+
+2.2 FreeBSD way
+
+Yes, It's cool.
+Let's use Acqua A5 as an example : uboot as next boot loader + micro SD + Acqua ( https://www.acmesystems.it/acqua )
+
+2.2.1
+
+sudo pkg install gmake gsed arm-none-eabi-gcc492
+
+for enable debug:
+sudo pkg install arm-none-eabi-newlib
+
+$ cd <project directory>
+$ gmake SED=gsed HOSTCC=cc CROSS_COMPILE=arm-none-eabi- mrproper
+$ gmake SED=gsed HOSTCC=cc CROSS_COMPILE=arm-none-eabi- acquasd_256M_uboot_defconfig
+$ gmake SED=gsed HOSTCC=cc CROSS_COMPILE=arm-none-eabi- menuconfig
+
+tuning or disable sleep on Ethernet PHY
+
+gmake SED=gsed HOSTCC=cc CROSS_COMPILE=arm-none-eabi-
 
 3 Release
 ================================================================================
